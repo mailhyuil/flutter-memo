@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:memo_app/screens/home/home_screen.dart';
+import 'package:memo_app/screens/memo/memo_screen.dart';
 import 'package:memo_app/services/locator_service.dart';
 
 void main() {
@@ -14,12 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Memo App Demo',
+      title: 'Mail Memo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const MemoScreen(),
     );
   }
 }

@@ -10,9 +10,15 @@ class CustomScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(appBarTitle),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(
+          appBarTitle,
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: body,
     );
