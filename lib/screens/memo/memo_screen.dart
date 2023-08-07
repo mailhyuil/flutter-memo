@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:memo_app/widgets/custom_scaffold.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MemoScreen extends StatefulWidget {
@@ -30,6 +28,7 @@ class _MemoScreenState extends State<MemoScreen> {
     );
   }
 
+  BuildContext? dialogContext;
   void _onFieldSubmitted(String value) {
     if (value != '') {
       setState(() {
@@ -38,29 +37,64 @@ class _MemoScreenState extends State<MemoScreen> {
         sp.setStringList('memos', memos);
         _controller.clear();
       });
+      Navigator.pop(dialogContext!);
+      dialogContext = null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-        appBarTitle: 'Mail Memo',
+    return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          title: Text(
+            'Mail Memo',
+            style: GoogleFonts.pacifico(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 32,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    dialogContext = context;
+                    return Dialog(
+                      child: Form(
+                        key: formKey,
+                        child: TextFormField(
+                          textInputAction: TextInputAction.done,
+                          maxLines: 3,
+                          controller: _controller,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your memo',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(20),
+                          ),
+                          onFieldSubmitted: _onFieldSubmitted,
+                        ),
+                      ),
+                    );
+                  });
+            },
+            backgroundColor: Colors.white,
+            child: const Icon(
+              Icons.add,
+              color: Colors.black,
+            )),
         body: Column(
           children: [
-            Form(
-              key: formKey,
-              child: TextFormField(
-                controller: _controller,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'Enter your memo',
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white)),
-                ),
-                onFieldSubmitted: _onFieldSubmitted,
-              ),
-            ),
-            const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 scrollDirection: Axis.vertical,
@@ -71,27 +105,20 @@ class _MemoScreenState extends State<MemoScreen> {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                            _triggers[index] = true;
+                            _triggers[index] = !_triggers[index];
                           });
                         },
                         child: AnimatedSize(
                           duration: const Duration(seconds: 1),
                           curve: Curves.elasticOut,
                           child: AnimatedContainer(
-                            onEnd: () {
-                              Timer(const Duration(seconds: 2), () {
-                                setState(() {
-                                  _triggers[index] = false;
-                                });
-                              });
-                            },
                             height: _triggers[index] ? 400 : null,
                             duration: const Duration(seconds: 1),
                             curve: Curves.elasticOut,
                             decoration: BoxDecoration(
                               color: _triggers[index]
-                                  ? Colors.lightBlue[900]
-                                  : Colors.white,
+                                  ? Colors.white
+                                  : Colors.white10,
                               borderRadius: _triggers[index]
                                   ? BorderRadius.circular(30)
                                   : BorderRadius.circular(0),
@@ -108,8 +135,8 @@ class _MemoScreenState extends State<MemoScreen> {
                                       softWrap: true,
                                       style: TextStyle(
                                           color: _triggers[index]
-                                              ? Colors.white
-                                              : Colors.black,
+                                              ? Colors.black
+                                              : Colors.white,
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold),
                                     ),
@@ -122,10 +149,10 @@ class _MemoScreenState extends State<MemoScreen> {
                                       });
                                     },
                                     icon: Icon(
-                                      Icons.delete_forever,
+                                      Icons.check_circle,
                                       color: _triggers[index]
-                                          ? Colors.white
-                                          : Colors.black,
+                                          ? Colors.black
+                                          : Colors.white,
                                     ),
                                   ),
                                 ],
