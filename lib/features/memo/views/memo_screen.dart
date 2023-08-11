@@ -6,7 +6,6 @@ import 'package:memo_app/features/memo/view_models/memo_view_model.dart';
 
 class MemoScreen extends ConsumerStatefulWidget {
   const MemoScreen({Key? key}) : super(key: key);
-
   @override
   MemoScreenState createState() => MemoScreenState();
 }
@@ -18,6 +17,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
   BuildContext? dialogContext;
 
   void _upsertMemo(int? index) {
+    _controller.clear();
     if (index != null) {
       _controller.text =
           ref.read(memoViewModelProvider).asData!.value[index].content;
@@ -45,7 +45,6 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                 ),
                 onFieldSubmitted: (value) {
                   if (value == '') return;
-                  _controller.clear();
                   Navigator.pop(dialogContext!);
                   index == null
                       ? ref.read(memoViewModelProvider.notifier).addMemo(value)
@@ -69,6 +68,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
             child: Text('Error'),
           ),
           data: (memos) {
+            final triggers = ref.read(memoViewModelProvider.notifier).triggers;
             return Scaffold(
               backgroundColor: Colors.black,
               appBar: AppBar(
@@ -100,18 +100,28 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                       itemCount: memos.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () => _upsertMemo(index),
+                          onTap: () {
+                            ref
+                                .read(memoViewModelProvider.notifier)
+                                .toggleTrigger(index);
+                            // _upsertMemo(index);
+                          },
                           child: Column(
                             children: [
                               AnimatedSize(
                                 duration: const Duration(seconds: 1),
                                 curve: Curves.elasticOut,
                                 child: AnimatedContainer(
+                                  height: triggers[index] ? 200 : null,
                                   duration: const Duration(seconds: 1),
                                   curve: Curves.elasticOut,
                                   decoration: BoxDecoration(
-                                    color: Colors.white10,
-                                    borderRadius: BorderRadius.circular(0),
+                                    color: triggers[index]
+                                        ? Colors.white
+                                        : Colors.white10,
+                                    borderRadius: triggers[index]
+                                        ? BorderRadius.circular(20)
+                                        : BorderRadius.circular(0),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -121,14 +131,21 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                                       children: [
                                         Flexible(
                                           child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 memos[index].content,
                                                 softWrap: true,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
+                                                style: TextStyle(
+                                                    overflow: triggers[index]
+                                                        ? null
+                                                        : TextOverflow.ellipsis,
+                                                    color: triggers[index]
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                     fontSize: 20,
                                                     fontWeight:
                                                         FontWeight.bold),
@@ -138,8 +155,10 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                                                     .format(
                                                         memos[index].createdAt),
                                                 softWrap: true,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
+                                                style: TextStyle(
+                                                    color: triggers[index]
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                     fontSize: 12,
                                                     fontWeight:
                                                         FontWeight.w200),
@@ -147,14 +166,27 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                                             ],
                                           ),
                                         ),
-                                        IconButton(
-                                          onPressed: () => ref
-                                              .read(memoViewModelProvider
-                                                  .notifier)
-                                              .deleteMemo(index),
-                                          icon: const Icon(
-                                            Icons.check_circle,
-                                            color: Colors.white,
+                                        Visibility(
+                                          visible: triggers[index],
+                                          child: Row(
+                                            children: [
+                                              IconButton(
+                                                onPressed: () {
+                                                  _upsertMemo(index);
+                                                },
+                                                icon: const Icon(Icons.edit,
+                                                    color: Colors.black),
+                                              ),
+                                              IconButton(
+                                                onPressed: () => ref
+                                                    .read(memoViewModelProvider
+                                                        .notifier)
+                                                    .deleteMemo(index),
+                                                icon: const Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.green),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
