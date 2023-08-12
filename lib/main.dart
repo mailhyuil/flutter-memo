@@ -9,6 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sp = await SharedPreferences.getInstance();
   final repository = MemoRepository(sp);
+
   runApp(
     ProviderScope(
       overrides: [

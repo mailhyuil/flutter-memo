@@ -9,6 +9,11 @@ class MemoRepository {
     return sp.getStringList('memos') ?? [];
   }
 
+  Future<String> getMemo(int index) async {
+    final memos = await getMemos();
+    return memos[index];
+  }
+
   Future<void> addMemo(String memo) async {
     final memos = await getMemos();
     memos.add(memo);

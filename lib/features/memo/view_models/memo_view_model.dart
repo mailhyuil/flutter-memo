@@ -30,7 +30,14 @@ class MemoViewModel extends AsyncNotifier<List<MemoModel>> {
     state = AsyncValue.data([...memos]);
   }
 
-  void complete(int index) {
+  void reorderMemo(int oldIndex, int newIndex) async {
+    final memo = memos.removeAt(oldIndex);
+    memos.insert(newIndex, memo);
+    state = AsyncValue.data([...memos]);
+  }
+
+  void complete(String id) {
+    final index = findIndexById(id);
     final memo = memos[index];
     final completedMemo = MemoModel(
       content: memo.content,
@@ -42,6 +49,10 @@ class MemoViewModel extends AsyncNotifier<List<MemoModel>> {
     state = AsyncValue.data([...memos]);
   }
 
+  int findIndexById(String id) {
+    return memos.indexWhere((element) => element.id == id);
+  }
+
   void addMemo(String memo) async {
     final newMemo = MemoModel(content: memo, createdAt: DateTime.now());
     await repo.addMemo(jsonEncode(newMemo.toJson()));
@@ -50,14 +61,16 @@ class MemoViewModel extends AsyncNotifier<List<MemoModel>> {
     state = AsyncValue.data(memos);
   }
 
-  void deleteMemo(int index) async {
+  void deleteMemo(String id) async {
+    final index = findIndexById(id);
     memos.removeAt(index);
     await repo.deleteMemo(index);
     _initTriggers();
     state = AsyncValue.data([...memos]);
   }
 
-  void updateMemo(int index, String memo) async {
+  void updateMemo(String id, String memo) async {
+    final index = findIndexById(id);
     final newMemo = MemoModel(content: memo, createdAt: DateTime.now());
     memos[index] = newMemo;
     await repo.updateMemo(index, jsonEncode(newMemo.toJson()));
