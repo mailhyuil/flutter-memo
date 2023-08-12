@@ -30,6 +30,18 @@ class MemoViewModel extends AsyncNotifier<List<MemoModel>> {
     state = AsyncValue.data([...memos]);
   }
 
+  void complete(int index) {
+    final memo = memos[index];
+    final completedMemo = MemoModel(
+      content: memo.content,
+      createdAt: memo.createdAt,
+      isCompleted: !memo.isCompleted,
+    );
+    memos[index] = completedMemo;
+    repo.updateMemo(index, jsonEncode(completedMemo.toJson()));
+    state = AsyncValue.data([...memos]);
+  }
+
   void addMemo(String memo) async {
     final newMemo = MemoModel(content: memo, createdAt: DateTime.now());
     await repo.addMemo(jsonEncode(newMemo.toJson()));

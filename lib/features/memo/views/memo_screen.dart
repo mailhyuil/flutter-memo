@@ -31,7 +31,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
               key: formKey,
               child: TextFormField(
                 textInputAction: TextInputAction.done,
-                maxLines: 3,
+                maxLines: 10,
                 controller: _controller,
                 style: const TextStyle(
                   color: Colors.black,
@@ -76,6 +76,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                 foregroundColor: Colors.white,
                 title: Text(
                   'Mail Memo',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.pacifico(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -104,42 +105,69 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                             ref
                                 .read(memoViewModelProvider.notifier)
                                 .toggleTrigger(index);
-                            // _upsertMemo(index);
                           },
-                          child: Column(
-                            children: [
-                              AnimatedSize(
-                                duration: const Duration(seconds: 1),
-                                curve: Curves.elasticOut,
-                                child: AnimatedContainer(
-                                  height: triggers[index] ? 200 : null,
+                          child: Dismissible(
+                            key: Key(index.toString()),
+                            onDismissed: (direction) {
+                              if (direction == DismissDirection.endToStart) {
+                                ref
+                                    .read(memoViewModelProvider.notifier)
+                                    .deleteMemo(index);
+                              }
+                            },
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              color: Colors.red,
+                              child: const ListTile(
+                                trailing: Icon(
+                                  Icons.delete_forever_rounded,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                AnimatedSize(
                                   duration: const Duration(seconds: 1),
                                   curve: Curves.elasticOut,
-                                  decoration: BoxDecoration(
-                                    color: triggers[index]
-                                        ? Colors.white
-                                        : Colors.white10,
-                                    borderRadius: triggers[index]
-                                        ? BorderRadius.circular(20)
-                                        : BorderRadius.circular(0),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                memos[index].content,
-                                                softWrap: true,
-                                                style: TextStyle(
+                                  child: AnimatedContainer(
+                                    duration: const Duration(seconds: 1),
+                                    curve: Curves.elasticOut,
+                                    decoration: BoxDecoration(
+                                      color: triggers[index]
+                                          ? Colors.white
+                                          : Colors.white10,
+                                      borderRadius: triggers[index]
+                                          ? BorderRadius.circular(20)
+                                          : BorderRadius.circular(0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Checkbox(
+                                            value: memos[index].isCompleted,
+                                            onChanged: (value) => ref
+                                                .read(memoViewModelProvider
+                                                    .notifier)
+                                                .complete(index),
+                                            activeColor: Colors.green,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  memos[index].content,
+                                                  softWrap: true,
+                                                  style: TextStyle(
                                                     overflow: triggers[index]
                                                         ? null
                                                         : TextOverflow.ellipsis,
@@ -147,55 +175,59 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                                                         ? Colors.black
                                                         : Colors.white,
                                                     fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              Text(
-                                                DateFormat('yyyy-MM-dd HH:mm')
-                                                    .format(
-                                                        memos[index].createdAt),
-                                                softWrap: true,
-                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  DateFormat('yyyy-MM-dd HH:mm')
+                                                      .format(memos[index]
+                                                          .createdAt),
+                                                  softWrap: true,
+                                                  style: TextStyle(
                                                     color: triggers[index]
                                                         ? Colors.black
                                                         : Colors.white,
                                                     fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.w200),
-                                              ),
-                                            ],
+                                                    fontWeight: FontWeight.w200,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        Visibility(
-                                          visible: triggers[index],
-                                          child: Row(
-                                            children: [
-                                              IconButton(
-                                                onPressed: () {
-                                                  _upsertMemo(index);
-                                                },
-                                                icon: const Icon(Icons.edit,
-                                                    color: Colors.black),
-                                              ),
-                                              IconButton(
-                                                onPressed: () => ref
-                                                    .read(memoViewModelProvider
-                                                        .notifier)
-                                                    .deleteMemo(index),
-                                                icon: const Icon(
-                                                    Icons.check_circle,
-                                                    color: Colors.green),
-                                              ),
-                                            ],
+                                          Visibility(
+                                            visible: triggers[index],
+                                            child: Row(
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    _upsertMemo(index);
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.edit_document,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                // IconButton(
+                                                //   onPressed: () => ref
+                                                //       .read(memoViewModelProvider
+                                                //           .notifier)
+                                                //       .deleteMemo(index),
+                                                //   icon: const Icon(
+                                                //     Icons.delete_forever,
+                                                //     color: Colors.red,
+                                                //   ),
+                                                // ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                            ],
+                                const SizedBox(height: 5),
+                              ],
+                            ),
                           ),
                         );
                       },
