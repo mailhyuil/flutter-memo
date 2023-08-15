@@ -6,7 +6,7 @@ class MemoRepository {
   MemoRepository(this.sp);
 
   Future<List<String>> getMemos() async {
-    return sp.getStringList('memos') ?? [];
+    return sp.getStringList('mailmemo_memos') ?? [];
   }
 
   Future<String> getMemo(int index) async {
@@ -17,18 +17,18 @@ class MemoRepository {
   Future<void> addMemo(String memo) async {
     final memos = await getMemos();
     memos.add(memo);
-    sp.setStringList('memos', memos);
+    sp.setStringList('mailmemo_memos', memos);
   }
 
   Future<void> deleteMemo(int index) async {
     final memos = await getMemos();
     memos.removeAt(index);
-    sp.setStringList('memos', memos);
+    sp.setStringList('mailmemo_memos', memos);
   }
 
   Future<void> updateMemo(int index, String memo) async {
     final memos = await getMemos();
     memos[index] = memo;
-    sp.setStringList('memos', memos);
+    sp.setStringList('mailmemo_memos', memos);
   }
 }

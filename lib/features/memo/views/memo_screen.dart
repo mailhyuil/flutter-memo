@@ -77,7 +77,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
                 title: Text(
-                  'Mail Memo',
+                  'Simple Memo',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.pacifico(
                     color: Colors.white,
