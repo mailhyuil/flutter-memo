@@ -33,6 +33,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
               key: formKey,
               child: TextFormField(
                 textInputAction: TextInputAction.done,
+                autofocus: true,
                 maxLines: 10,
                 controller: _controller,
                 style: const TextStyle(

@@ -56,7 +56,7 @@ class MemoViewModel extends AsyncNotifier<List<MemoModel>> {
   void addMemo(String memo) async {
     final newMemo = MemoModel(content: memo, createdAt: DateTime.now());
     await repo.addMemo(jsonEncode(newMemo.toJson()));
-    memos = [...memos, newMemo];
+    memos = [newMemo, ...memos];
     _initTriggers();
     state = AsyncValue.data(memos);
   }
