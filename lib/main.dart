@@ -1,3 +1,4 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_app/features/memo/repositories/memo_repository.dart';
@@ -9,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sp = await SharedPreferences.getInstance();
   final repository = MemoRepository(sp);
-
+  Admob.initialize();
   runApp(
     ProviderScope(
       overrides: [

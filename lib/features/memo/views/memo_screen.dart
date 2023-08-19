@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:ui';
 
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,8 +18,23 @@ class MemoScreen extends ConsumerStatefulWidget {
 class MemoScreenState extends ConsumerState<MemoScreen> {
   final formKey = GlobalKey<FormState>();
   late final TextEditingController _controller = TextEditingController();
-
+  AdmobBannerSize? bannerSize;
   BuildContext? dialogContext;
+
+  @override
+  void initState() {
+    bannerSize = AdmobBannerSize.BANNER;
+    super.initState();
+  }
+
+  String? getBannerAdUnitId() {
+    if (Platform.isIOS) {
+      return 'ca-app-pub-5245116717044907/5722708420';
+    } else if (Platform.isAndroid) {
+      return 'ca-app-pub-5245116717044907/3256079769';
+    }
+    return null;
+  }
 
   void _upsertMemo(MemoModel? memo) {
     _controller.clear();
@@ -96,148 +113,165 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                   color: Colors.black,
                 ),
               ),
-              body: ReorderableListView.builder(
-                proxyDecorator: (child, index, animation) {
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (BuildContext context, Widget? child) {
-                      final double animValue =
-                          Curves.easeInOut.transform(animation.value);
-                      final double elevation = lerpDouble(0, 6, animValue)!;
-                      return Material(
-                        elevation: elevation,
-                        color: Colors.white24,
-                        child: child,
-                      );
-                    },
-                    child: child,
-                  );
-                },
-                onReorder: (oldIndex, newIndex) {
-                  if (oldIndex < newIndex) {
-                    newIndex--;
-                  }
-                  ref
-                      .read(memoViewModelProvider.notifier)
-                      .reorderMemo(oldIndex, newIndex);
-                },
-                itemCount: memos.length,
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: Key(memos[index].id),
-                    onDismissed: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
+              body: Column(
+                children: [
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      proxyDecorator: (child, index, animation) {
+                        return AnimatedBuilder(
+                          animation: animation,
+                          builder: (BuildContext context, Widget? child) {
+                            final double animValue =
+                                Curves.easeInOut.transform(animation.value);
+                            final double elevation =
+                                lerpDouble(0, 6, animValue)!;
+                            return Material(
+                              elevation: elevation,
+                              color: Colors.white24,
+                              child: child,
+                            );
+                          },
+                          child: child,
+                        );
+                      },
+                      onReorder: (oldIndex, newIndex) {
+                        if (oldIndex < newIndex) {
+                          newIndex--;
+                        }
                         ref
                             .read(memoViewModelProvider.notifier)
-                            .deleteMemo(memos[index].id);
-                      }
-                    },
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: Colors.red,
-                      child: const ListTile(
-                        trailing: Icon(
-                          Icons.delete_forever_rounded,
-                          color: Colors.white,
-                          size: 36,
-                        ),
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () => ref
-                          .read(memoViewModelProvider.notifier)
-                          .toggleTrigger(index),
-                      child: Column(
-                        children: [
-                          AnimatedSize(
-                            duration: const Duration(seconds: 1),
-                            curve: Curves.elasticOut,
-                            child: AnimatedContainer(
-                              duration: const Duration(seconds: 1),
-                              curve: Curves.elasticOut,
-                              decoration: BoxDecoration(
-                                color: triggers[index]
-                                    ? Colors.white
-                                    : Colors.white10,
-                                borderRadius: triggers[index]
-                                    ? BorderRadius.circular(20)
-                                    : BorderRadius.circular(0),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Checkbox(
-                                      value: memos[index].isCompleted,
-                                      onChanged: (value) => ref
-                                          .read(memoViewModelProvider.notifier)
-                                          .complete(memos[index].id),
-                                      activeColor: Colors.green,
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            memos[index].content,
-                                            softWrap: true,
-                                            style: TextStyle(
-                                              overflow: triggers[index]
-                                                  ? null
-                                                  : TextOverflow.ellipsis,
-                                              color: triggers[index]
-                                                  ? Colors.black
-                                                  : Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            DateFormat('yyyy-MM-dd HH:mm')
-                                                .format(memos[index].createdAt),
-                                            softWrap: true,
-                                            style: TextStyle(
-                                              color: triggers[index]
-                                                  ? Colors.black
-                                                  : Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w200,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Visibility(
-                                      visible: triggers[index],
-                                      child: Row(
-                                        children: [
-                                          IconButton(
-                                            onPressed: () {
-                                              _upsertMemo(memos[index]);
-                                            },
-                                            icon: const Icon(
-                                              Icons.edit_document,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            .reorderMemo(oldIndex, newIndex);
+                      },
+                      itemCount: memos.length,
+                      itemBuilder: (context, index) {
+                        return Dismissible(
+                          key: Key(memos[index].id),
+                          onDismissed: (direction) async {
+                            if (direction == DismissDirection.endToStart) {
+                              ref
+                                  .read(memoViewModelProvider.notifier)
+                                  .deleteMemo(memos[index].id);
+                            }
+                          },
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            color: Colors.red,
+                            child: const ListTile(
+                              trailing: Icon(
+                                Icons.delete_forever_rounded,
+                                color: Colors.white,
+                                size: 36,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 5),
-                        ],
-                      ),
+                          child: GestureDetector(
+                            onTap: () => ref
+                                .read(memoViewModelProvider.notifier)
+                                .toggleTrigger(index),
+                            child: Column(
+                              children: [
+                                AnimatedSize(
+                                  duration: const Duration(seconds: 1),
+                                  curve: Curves.elasticOut,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(seconds: 1),
+                                    curve: Curves.elasticOut,
+                                    decoration: BoxDecoration(
+                                      color: triggers[index]
+                                          ? Colors.white
+                                          : Colors.white10,
+                                      borderRadius: triggers[index]
+                                          ? BorderRadius.circular(20)
+                                          : BorderRadius.circular(0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Checkbox(
+                                            value: memos[index].isCompleted,
+                                            onChanged: (value) => ref
+                                                .read(memoViewModelProvider
+                                                    .notifier)
+                                                .complete(memos[index].id),
+                                            activeColor: Colors.green,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  memos[index].content,
+                                                  softWrap: true,
+                                                  style: TextStyle(
+                                                    overflow: triggers[index]
+                                                        ? null
+                                                        : TextOverflow.ellipsis,
+                                                    color: triggers[index]
+                                                        ? Colors.black
+                                                        : Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  DateFormat('yyyy-MM-dd HH:mm')
+                                                      .format(memos[index]
+                                                          .createdAt),
+                                                  softWrap: true,
+                                                  style: TextStyle(
+                                                    color: triggers[index]
+                                                        ? Colors.black
+                                                        : Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w200,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Visibility(
+                                            visible: triggers[index],
+                                            child: Row(
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    _upsertMemo(memos[index]);
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.edit_document,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                  Container(
+                    height: bannerSize!.height.toDouble(),
+                    color: Colors.white,
+                    child: AdmobBanner(
+                        adUnitId: getBannerAdUnitId()!, adSize: bannerSize!),
+                  )
+                ],
               ),
             );
           },
