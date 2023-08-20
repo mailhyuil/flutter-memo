@@ -15,8 +15,8 @@ class MemoRepository {
   }
 
   Future<void> addMemo(String memo) async {
-    final memos = await getMemos();
-    memos.add(memo);
+    var memos = await getMemos();
+    memos = [memo, ...memos];
     sp.setStringList('mailmemo_memos', memos);
   }
 

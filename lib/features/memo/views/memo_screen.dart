@@ -36,6 +36,7 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
     return null;
   }
 
+  void _onSubmit(value) {}
   void _upsertMemo(MemoModel? memo) {
     _controller.clear();
     if (memo != null) {
@@ -48,30 +49,56 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
           return Dialog(
             child: Form(
               key: formKey,
-              child: TextFormField(
-                textInputAction: TextInputAction.done,
-                autofocus: true,
-                maxLines: 10,
-                controller: _controller,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  hintText: 'Enter your memo',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(20),
-                ),
-                onFieldSubmitted: (value) {
-                  if (value == '') return;
-                  Navigator.pop(dialogContext!);
-                  memo == null
-                      ? ref.read(memoViewModelProvider.notifier).addMemo(value)
-                      : ref
-                          .read(memoViewModelProvider.notifier)
-                          .updateMemo(memo.id, value);
-                },
+              child: Stack(
+                children: [
+                  TextFormField(
+                    // textInputAction: TextInputAction.done,
+                    autofocus: true,
+                    maxLines: 10,
+                    controller: _controller,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your memo',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(20),
+                    ),
+                    validator: (value) {
+                      if (value == '') return 'Please enter your memo';
+                      return null;
+                    },
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 0,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black38,
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          Navigator.pop(dialogContext!);
+                          memo == null
+                              ? ref
+                                  .read(memoViewModelProvider.notifier)
+                                  .addMemo(_controller.text)
+                              : ref
+                                  .read(memoViewModelProvider.notifier)
+                                  .updateMemo(memo.id, _controller.text);
+                        }
+                      },
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -209,6 +236,9 @@ class MemoScreenState extends ConsumerState<MemoScreen> {
                                                 Text(
                                                   memos[index].content,
                                                   softWrap: true,
+                                                  maxLines: triggers[index]
+                                                      ? null
+                                                      : 1,
                                                   style: TextStyle(
                                                     overflow: triggers[index]
                                                         ? null
